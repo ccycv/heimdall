@@ -752,7 +752,8 @@ func (c *dfnsClient) doClientCall(ctx context.Context, httpClient *http.Client, 
 		headers.Set("Content-Type", "application/json")
 	}
 	client := *httpClient
-	if relativeUrl == initUserSignatureUrl || relativeUrl == initLoginUrl || headers.Get(userActionDfnsHeader) != "" {
+	// These challenge/registration calls must not enter the SDK's user-action signer.
+	if relativeUrl == initUserSignatureUrl || relativeUrl == initLoginUrl || relativeUrl == completeDelegatedRegistrationUrl || headers.Get(userActionDfnsHeader) != "" {
 		client.Transport = http.DefaultTransport
 	}
 	fullUrl, err := url.JoinPath(c.cfg.DFNS.BaseURL, relativeUrl)

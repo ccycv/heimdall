@@ -109,7 +109,6 @@ func (c *dfnsClient) GetUser(ctx context.Context, userID string) (*User, error) 
 func (c *dfnsClient) CompleteRegistrationWithWallets(ctx context.Context, credentials *Credentials) (CompletedRegistration, error) {
 	header := http.Header{}
 	header.Add(authDfnsHeader, dfnsAuthHeader(ctx))
-	header.Add(userActionDfnsHeader, "false")
 	credentials.EarlyAccessEmail = ""
 	walletNetwork := DefaultWalletNetworkMainNet
 	bscNetwork := BscWalletNetworkMainNet
