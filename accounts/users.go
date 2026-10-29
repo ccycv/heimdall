@@ -289,8 +289,16 @@ func (a *accounts) upsertUserAfterRegistrationAndCreateWalletView(ctx context.Co
 	if err != nil {
 		return nil, "", errors.Wrapf(err, "failed to upsert users masterkey and visitorId")
 	}
+	walletID, _ = dfns.ExtractMainWallet(res)
 	if _, err = a.createDefaultWalletView(ctx, userID, username, walletID, bscWallet, false); err != nil {
 		return nil, "", errors.Wrapf(err, "failed to create default walletview for user %v", userID)
+	}
+	if usr.DuplicateOf != nil {
+		original, lookupErr := a.getUserByID(ctx, *usr.DuplicateOf)
+		if lookupErr != nil {
+			return nil, "", errors.Wrap(lookupErr, "failed to resolve preserved duplicate identity")
+		}
+		return usr.DuplicateOf, original.MasterPubKey, nil
 	}
 	return usr.DuplicateOf, usr.MasterPubKey, nil
 }
@@ -338,6 +346,22 @@ func (a *accounts) upsertUserFromRegistration(ctx context.Context, now *time.Tim
 	pubkey, err := hex.DecodeString(walletPubKey)
 	if err != nil || len(pubkey) != ed25519.PublicKeySize {
 		log.Fatal(fmt.Sprintf("Wallet master key does not seems to be EdDSA/ed25519: \"%v\"! User %v %v", walletPubKey, userID, username))
+	}
+
+	existing, lookupErr := a.getUserByID(ctx, userID)
+	if lookupErr != nil && !storage.IsErr(lookupErr, storage.ErrNotFound) {
+		return nil, errors.Wrap(lookupErr, "failed to check existing registration identity")
+	}
+	if existing != nil && existing.MasterPubKey != "" && existing.MasterPubKey != existing.ID {
+		wallets, walletErr := a.delegatedRPClient.ListWallets(ctx, userID)
+		if walletErr != nil {
+			return nil, errors.Wrap(walletErr, "failed to verify original registration wallet ownership")
+		}
+		if err = preserveRegistrationIdentity(existing, userID, username, wallets, res); err != nil {
+			return nil, err
+		}
+		// Established social identities and device associations must never be rekeyed by registration.
+		return existing, nil
 	}
 
 	usr, err := a.insertIdentityKeyNameWithPubKeyAndVisitorID(ctx, now, userID, username, walletPubKey, visitorID, devicePubkey, earlyAccessEmail)
