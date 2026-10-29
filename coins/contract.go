@@ -134,22 +134,24 @@ type (
 		WaitTime       uint64 `json:"waitTime" yaml:"waitTime"`
 	}
 	coin struct {
-		SyncFrequency   stdlibtime.Duration
-		CreatedAt       *time.Time
-		UpdatedAt       *time.Time
-		DataUpdatedAt   *time.Time
-		Decimals        uint8
-		Version         uint64
-		PriceUSD        float64
-		ID              string
-		CoinGeckoCoinID string `db:"coingecko_coin_id"`
-		Network         string
-		Name            string
-		ContractAddress string
-		Symbol          string
-		SymbolGroup     string
-		IconUrl         string
-		Native          bool
+		SyncFrequency                     stdlibtime.Duration
+		CreatedAt                         *time.Time
+		UpdatedAt                         *time.Time
+		DataUpdatedAt                     *time.Time
+		Decimals                          uint8
+		Version                           uint64
+		PriceUSD                          float64
+		ID                                string
+		CoinGeckoCoinID                   string `db:"coingecko_coin_id"`
+		Network                           string
+		Name                              string
+		ContractAddress                   string
+		Symbol                            string
+		SymbolGroup                       string
+		IconUrl                           string
+		Native                            bool
+		TokenizedCommunityExternalAddress *string `db:"tc_external_address"`
+		TokenizedCommunityTokenType       *string `db:"tc_type"`
 	}
 	coinToSync struct {
 		Network           string

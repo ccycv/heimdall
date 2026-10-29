@@ -752,7 +752,7 @@ func (c *dfnsClient) doClientCall(ctx context.Context, httpClient *http.Client, 
 		headers.Set("Content-Type", "application/json")
 	}
 	client := *httpClient
-	if relativeUrl == initUserSignatureUrl || headers.Get(userActionDfnsHeader) != "" {
+	if relativeUrl == initUserSignatureUrl || relativeUrl == initLoginUrl || headers.Get(userActionDfnsHeader) != "" {
 		client.Transport = http.DefaultTransport
 	}
 	fullUrl, err := url.JoinPath(c.cfg.DFNS.BaseURL, relativeUrl)
@@ -825,7 +825,6 @@ func (c *dfnsClient) GetLoginChallenge(ctx context.Context, username string) (*L
 		OrgID:    c.cfg.DFNS.OrganizationID,
 	}
 	header := http.Header{}
-	header.Set(userActionDfnsHeader, "false")
 	resp, err := dfnsCall[struct {
 		Username string `json:"username"`
 		OrgID    string `json:"orgId"`
