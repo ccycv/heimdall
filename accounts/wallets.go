@@ -755,6 +755,13 @@ func (a *accounts) FetchMainWallet(ctx context.Context, masterKey string) (Walle
 		return nil, errors.Wrapf(err, "failed to wallet list for user %v", usr.ID)
 	}
 	var mainWallet Wallet
+	if usr.MasterPubKey != "" && usr.MasterPubKey != usr.ID {
+		mainWallet = identityWallet(userWallets, usr.MasterPubKey)
+		if mainWallet == nil {
+			return nil, errors.Wrap(ErrNotFound, "original identity wallet not found; refusing replacement wallet")
+		}
+		return mainWallet, nil
+	}
 	for _, wallet := range userWallets {
 		if walletID, walletPubKey := dfns.CheckMainWallet(wallet); walletID != "" && walletPubKey != "" {
 			mainWallet = wallet
